@@ -27,6 +27,22 @@ class LoginUserInput(BaseModel):
         from_attributes=True
 
 
+class ForgetPass1Input(BaseModel):
+    email: EmailStr
+
+    class Config:
+        orm_mode = True
+        from_attributes=True
+
+class ForgetPass2Input(BaseModel):
+    email: EmailStr
+    otp: str
+    password: str
+
+    class Config:
+        orm_mode = True
+        from_attributes=True
+
 class GetUser(BaseModel):
     user_id: int
     username: str

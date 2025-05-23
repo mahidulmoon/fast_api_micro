@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from ...utils import response
 from ...database import SessionLocal
@@ -10,11 +10,18 @@ from sqlalchemy import or_
 from ...logger import logger
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from email.message import EmailMessage
+import aiosmtplib
+from random import randint
 
 
 SECRET_KEY= os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -41,6 +48,22 @@ def get_db():
         yield db
     finally:
         db.close()
+
+async def send_email(subject: str, recipient: str, body: str):
+    message = EmailMessage()
+    message["From"] = EMAIL_USERNAME
+    message["To"] = recipient
+    message["Subject"] = subject
+    message.set_content(body)
+
+    await aiosmtplib.send(
+        message,
+        hostname=EMAIL_HOST,
+        port=EMAIL_PORT,
+        username=EMAIL_USERNAME,
+        password=EMAIL_PASSWORD,
+        start_tls=True
+    )
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
@@ -87,8 +110,13 @@ def login(user_input: user_auth_schema.LoginUserInput,db: Session = Depends(get_
             logger.error(f"No user found using this email")
             return response.error_response("No user found using this email",None,400)
         
+        if db_user.otp_verified == 0 or db_user.otp_verified == "0":
+            logger.error(f"This user otp is not verified yet.")
+            return response.error_response("This user otp is not verified yet.",None,400)
+        
         if not verify_password(user_input.password + os.getenv("SECRET_KEY"), db_user.password):
-            logger.warning(f"Login failed: wrong password for {user_input.email}")
+            logger.error(f"Login failed: wrong password for {user_input.email}")
+            return response.error_response(f"Login failed: wrong password for {user_input.email}",None,400)
         
         access_token = create_access_token(
             data={"sub": db_user.email},  # sub = subject (email)
@@ -118,3 +146,51 @@ def get_all_users(db: Session = Depends(get_db)):
 
     return_json = [user_auth_schema.GetUser.from_orm(user) for user in all_user]
     return response.success_response("user successfully registered",return_json,201)
+
+@router.post("/generate_otp")
+def forget_password_step1(user_input: user_auth_schema.ForgetPass1Input, background_tasks: BackgroundTasks,db: Session = Depends(get_db)):
+    try:
+        find_user = db.query(User).filter(User.email == user_input.email).first()
+
+        if not find_user:
+            logger.error(f"no user found using this email")
+            return response.error_response("no user found using this email","no user found using this email",400)
+
+        otp = randint(11111,99999)
+        email_body = f"your otp is {otp}"
+
+        find_user.otp = otp
+        find_user.otp_verified = "0"
+        db.commit()
+        db.refresh(find_user)
+
+        background_tasks.add_task(send_email, "OTP from realhub.ai", user_input.email, email_body)
+
+        return response.success_response(f"otp successfully sent to: {user_input.email}",{},201)
+    except Exception as e:
+        return response.error_response(str(e),str(e),400)
+    
+@router.post("/submit_otp")
+def forget_password_step2(user_input: user_auth_schema.ForgetPass2Input, background_tasks: BackgroundTasks,db: Session = Depends(get_db)):
+    try:
+        find_user = db.query(User).filter(User.email == user_input.email).first()
+
+        if not find_user:
+            logger.error(f"no user found using this email")
+            return response.error_response("no user found using this email","no user found using this email",400)
+
+        otp = user_input.otp
+        hashed_pw = hash_password(user_input.password)
+
+        if int(find_user.otp) != int(otp):
+            logger.error(f"otp is not valid try again")
+            return response.error_response("otp is not valid try again","otp is not valid try again",400)
+
+        find_user.password = hashed_pw
+        find_user.otp_verified = "1"
+        db.commit()
+        db.refresh(find_user)
+
+        return response.success_response(f"password changed successfully.",{},201)
+    except Exception as e:
+        return response.error_response(str(e),str(e),400)

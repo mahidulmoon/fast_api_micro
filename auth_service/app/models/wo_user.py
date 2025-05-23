@@ -9,6 +9,8 @@ class User(Base):
     username = Column(String(32), unique=True, index=True)
     email = Column(Text, unique=True, index=True)
     password = Column(String(70))
+    otp_verified = Column(Enum('0', '1', name='otp_verfied_enum'), default='1')
+    otp = Column(String(10))
     first_name = Column(String(60))
     last_name = Column(String(32))
     avatar = Column(Text)

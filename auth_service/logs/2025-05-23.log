@@ -1,0 +1,10 @@
+[2025-05-23 14:32:47,241] INFO - user successfully registered
+[2025-05-23 14:34:28,864] WARNING - Login failed: wrong password for mahidulmoon@gmail.com
+[2025-05-23 14:35:03,732] ERROR - Login failed: wrong password for mahidulmoon@gmail.com
+[2025-05-23 14:36:52,017] ERROR - This user otp is not verified yet.
+[2025-05-23 14:37:35,460] ERROR - This user otp is not verified yet.
+[2025-05-23 14:51:58,553] ERROR - no user found using this email
+[2025-05-23 15:08:25,185] ERROR - This user otp is not verified yet.
+[2025-05-23 15:09:24,440] ERROR - This user otp is not verified yet.
+[2025-05-23 15:09:47,383] ERROR - This user otp is not verified yet.
+[2025-05-23 15:10:01,069] ERROR - Login failed: wrong password for mahidulmoon@gmail.com
