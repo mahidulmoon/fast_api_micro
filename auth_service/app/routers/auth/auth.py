@@ -145,7 +145,7 @@ def get_all_users(db: Session = Depends(get_db)):
     all_user = db.query(User).all()
 
     return_json = [user_auth_schema.GetUser.from_orm(user) for user in all_user]
-    return response.success_response("user successfully registered",return_json,201)
+    return response.success_response("user successfully fetched",return_json,200)
 
 @router.post("/generate_otp")
 def forget_password_step1(user_input: user_auth_schema.ForgetPass1Input, background_tasks: BackgroundTasks,db: Session = Depends(get_db)):

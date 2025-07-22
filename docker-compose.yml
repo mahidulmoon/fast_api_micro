@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  realhub_ai_auth_service:
+  vidlist_ai_auth_service:
     build: ./auth_service
     ports:
       - "8000:8000"
@@ -13,20 +13,8 @@ services:
       - db_auth
     networks:
       - app-network
-  # realhub_ai_post_service:
-  #   build: ./post_service
-  #   ports:
-  #     - "8081:8081"
-  #   volumes:
-  #     - ./post_service:/app
-  #   env_file:
-  #     - ./post_service/.env
-  #   depends_on:
-  #     - db_post
-  #   networks:
-  #     - app-network
   
-  # realhub_ai_api_service:
+  # vidlist_ai_api_service:
   #   build: ./api_service
   #   ports:
   #     - "8082:8082"
@@ -44,31 +32,20 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: realhub_ai
+      POSTGRES_DB: vidlist_ai
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
     volumes:
       - pgdata_auth:/var/lib/postgresql/data
     networks:
       - app-network
-  # db_post:
-  #   image: postgres:15
-  #   ports:
-  #     - "5433:5432"
-  #   environment:
-  #     POSTGRES_DB: realhub_ai
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: 1234
-  #   volumes:
-  #     - pgdata_post:/var/lib/postgresql/data
-  #   networks:
-  #     - app-network
+
   # db_api:
   #   image: postgres:15
   #   ports:
   #     - "5434:5432"
   #   environment:
-  #     POSTGRES_DB: realhub_ai
+  #     POSTGRES_DB: vidlist_ai
   #     POSTGRES_USER: postgres
   #     POSTGRES_PASSWORD: 1234
   #   volumes:
@@ -118,7 +95,6 @@ services:
   #   volumes:
   #     - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
   #     - ./auth_service/logs:/var/log/fastapi/auth:ro
-  #     - ./post_service/logs:/var/log/fastapi/post:ro
   #     - ./api_service/logs:/var/log/fastapi/api:ro
   #   command: ["--strict.perms=false"]
   #   depends_on:
@@ -141,7 +117,6 @@ services:
 
 volumes:
   pgdata_auth:
-  pgdata_post:
   pgdata_api:
   esdata:
 

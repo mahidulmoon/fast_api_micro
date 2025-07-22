@@ -10,7 +10,7 @@ os.makedirs(log_dir, exist_ok=True)
 log_filename = os.path.join(log_dir, f"{datetime.now().strftime('%Y-%m-%d')}.log")
 
 # Create logger
-logger = logging.getLogger("realhub_ai")
+logger = logging.getLogger("vidlist_ai")
 logger.setLevel(logging.INFO)
 
 # Remove any default handlers if already set
