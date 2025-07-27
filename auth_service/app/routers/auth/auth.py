@@ -129,7 +129,10 @@ def login(user_input: user_auth_schema.LoginUserInput,db: Session = Depends(get_
                 "email" : db_user.email,
                 "first_name" : db_user.first_name,
                 "last_name" : db_user.last_name,
-                "admin" : db_user.admin
+                "username" : db_user.username,
+                "id" : db_user.user_id,
+                "type" : db_user.type,
+                "language" : db_user.language
             }
         }
 

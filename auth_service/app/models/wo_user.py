@@ -35,6 +35,7 @@ class User(Base):
 
     # Status Flags
     is_active = Column(Boolean, default=True)
+    otp_verified = Column(Boolean, default=False)
     freelancer_status = Column(Boolean, default=True)
     is_demo = Column(Boolean, default=False)
     auto_login = Column(Boolean, default=True)

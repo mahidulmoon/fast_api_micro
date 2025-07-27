@@ -1,0 +1,3 @@
+*.log
+*.pyc
+/auth_service/app/routers/auth/__pycache__
